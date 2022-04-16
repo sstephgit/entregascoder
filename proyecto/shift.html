@@ -32,69 +32,88 @@
       </div>
     </nav>
 
-    <h1 class="pt-5 text-center">Gestion de Turnos</h1>
-    <div class="container">
-      <div class="row">
-        <div class="col-4">
-          <div class="pt-5">
-            <h5>Carga tu turno</h5>
-            <form id="formulario">
-              <div class="mb-3">
-                <label for="name" class="form-label">Nombre</label>
-                <input
-                  type="text"
-                  required="true"
-                  name="firstName"
-                  class="form-control"
-                  id="firstName"
-                />
-              </div>
-              <div class="mb-3">
-                <label for="lastName" class="form-label">Apellido</label>
-                <input
-                  type="text"
-                  required="true"
-                  class="form-control"
-                  id="lastName"
-                  name="lastName"
-                />
-              </div>
-              <div class="mb-3">
-                <label for="document" class="form-label">DNI</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  required="true"
-                  id="document"
-                  name="document"
-                />
-              </div>
-              <div class="mb-3">
-                <label for="email" class="form-label"> Email</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  required="true"
-                  id="email"
-                  name="email"
-                />
-              </div>
-              <div class="mb-3">
-                <label for="dateTime" class="form-label">fecha del turno</label>
-                <input
-                  type="datetime-local"
-                  class="form-control"
-                  required="true"
-                  id="dateTime"
-                  name="dateTime"
-                />
-              </div>
-              <button type="submit" class="btn btn-success">Agendar</button>
-            </form>
+    <div class="p-5">
+      <h1 class="text-center">Gestion de Turnos</h1>
+      <div class="container">
+        <div class="row">
+          <div class="col-4">
+            <div class="pt-5">
+              <h5>Carga tu turno</h5>
+              <form id="formulario">
+                <div class="mb-3">
+                  <label for="firstName" class="form-label">Nombre</label>
+                  <input
+                    type="text"
+                    required="true"
+                    name="firstName"
+                    class="form-control"
+                    id="firstName"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="lastName" class="form-label">Apellido</label>
+                  <input
+                    type="text"
+                    required="true"
+                    class="form-control"
+                    id="lastName"
+                    name="lastName"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="document" class="form-label">DNI</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    required="true"
+                    id="document"
+                    name="document"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="email" class="form-label"> Email</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    required="true"
+                    id="email"
+                    name="email"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="specialty" class="form-label">
+                    Especialidad</label
+                  >
+                  <select
+                    name="especialidad"
+                    class="form-select mb-3"
+                    aria-label="example"
+                    required="true"
+                  >
+                    <option selected>Seleccione una Especialidad</option>
+                    <option value="1">Masaje</option>
+                    <option value="2">Limpieza Facial</option>
+                    <option value="3">Depilación</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="dateTime" class="form-label"
+                    >fecha del turno</label
+                  >
+                  <input
+                    type="datetime-local"
+                    class="form-control"
+                    required="true"
+                    id="dateTime"
+                    name="dateTime"
+                  />
+                </div>
+                <button type="submit" class="btn btn-success">Agendar</button>
+              </form>
+            </div>
           </div>
-        </div>
-        <div class="col-8">
-          <div class="mt-5 d-flex flex-column align-items-center">
+          <div class="col-8">
+            <div class="mt-5 d-flex flex-column align-items-center">
               <h5 class="text-center">Busca tu Turno</h5>
               <form id="search" class="d-flex">
                 <input
@@ -107,20 +126,19 @@
                   Buscar
                 </button>
               </form>
-              <h6 class="mt-2">
-                Por los momentos los resultados se mostraran por la consola del
-                navegador...
-              </h6>
+              <div id="table"></div> 
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <script src="./script.js"></script>
+    <script src="./script.js" type="module"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
       crossorigin="anonymous"
     ></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </body>
 </html>
