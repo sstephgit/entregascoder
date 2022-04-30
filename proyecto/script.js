@@ -1,3 +1,5 @@
+
+import { format, isEqual, isPast } from 'https://esm.run/date-fns';
 class Shift {
   constructor(firstName, lastName, document, email, speciality, dateTime) {
     this.firstName = firstName;
@@ -15,10 +17,16 @@ const SEARCH = document.getElementById("search");
 
 FORMULARIO.addEventListener("submit", (event) => {
   event.preventDefault();
-  createShift();
-  addLocalStorage();
-  createAlerts("success","Ok","Su turno ha sido creado")
-  FORMULARIO.reset();
+
+  if (!createShift()) return
+
+  if (isValidDateShift()) {
+    addLocalStorage();
+    createAlerts("success", "Ok", "Su turno ha sido creado")
+    FORMULARIO.reset();
+  } else {
+    createAlerts("error", "Error", "Ya existe un turno para esta fecha y hora")
+  }
 });
 
 SEARCH.addEventListener("submit", (event) => {
@@ -26,17 +34,37 @@ SEARCH.addEventListener("submit", (event) => {
   listResults();
 });
 
+
 const createShift = () => {
   const DATA = new FormData(FORMULARIO);
-  newShift = new Shift(
-    DATA.get("firstName"),
-    DATA.get("lastName"),
-    DATA.get("document"),
-    DATA.get("email"),
-    DATA.get("especialidad"),
-    DATA.get("dateTime")
-  );
+  if (isPast(new Date(DATA.get("dateTime")))) {
+    createAlerts("error", "Error", "La fecha no puede ser anterior a la actual");
+    return false
+  } else {
+    newShift = new Shift(
+      DATA.get("firstName"),
+      DATA.get("lastName"),
+      DATA.get("document"),
+      DATA.get("email"),
+      DATA.get("especialidad"),
+      DATA.get("dateTime")
+    );
+    return true
+  }
 };
+
+const isValidDateShift = () => {
+  const DATA_LOCAL_STORAGE = JSON.parse(localStorage.getItem("shiftList"))
+  if (DATA_LOCAL_STORAGE == null) { return true }
+  const EXISTING_SHIFT = DATA_LOCAL_STORAGE.find(
+    (shift) => isEqual(new Date(newShift.dateTime), new Date(shift.dateTime))
+  );
+  if (EXISTING_SHIFT) {
+    return false;
+  }
+  return true;
+}
+
 
 const addLocalStorage = () => {
   if (localStorage.getItem("shiftList")) {
@@ -68,16 +96,16 @@ const getSpeciality = (value) => {
   return specialityName;
 };
 
-const createAlerts = (icon,title,text) =>{
+const createAlerts = (icon, title, text) => {
   Swal.fire({
     icon: icon,
     title: title,
     text: text,
-  });   
+  });
 }
 
 
-const buildTable = (data) =>{
+const buildTable = (data) => {
   let tableHTML = `
   <table class="mt-5 table table-hover">                
       <th>Nombre</th>
@@ -88,7 +116,7 @@ const buildTable = (data) =>{
     tableHTML += `
       <tr>
           <td>${shift.firstName} ${shift.lastName}</td>
-          <td>${new Date(shift.dateTime).toLocaleString()}</td>
+          <td>${format(new Date(shift.dateTime), 'dd-MM-yyyy H:mm')}</td>
           <td>${getSpeciality(shift.speciality)}</td>
       </tr>        
       `;
@@ -101,9 +129,9 @@ const buildTable = (data) =>{
 
 const listResults = () => {
   const DATA_LOCAL_STORAGE = JSON.parse(localStorage.getItem("shiftList"))
-  
-  if (DATA_LOCAL_STORAGE == null){
-    createAlerts("error","Error","No hay turnos cargados")
+
+  if (DATA_LOCAL_STORAGE == null) {
+    createAlerts("error", "Error", "No hay turnos cargados")
     return
   }
   const DATA_SEARCH = new FormData(SEARCH);
@@ -116,8 +144,8 @@ const listResults = () => {
     let nodeTable = document.getElementById("table");
     nodeTable.innerHTML = tableHTML;
     return
-  }else{
-    createAlerts("error","Error","No hay turnos cargados para este DNI")
+  } else {
+    createAlerts("error", "Error", "No hay turnos cargados para este DNI")
     let nodeTable = document.getElementById("table");
     nodeTable.innerHTML = "";
     return
