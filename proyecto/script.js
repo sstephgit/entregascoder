@@ -98,9 +98,9 @@ const getSpeciality = (value) => {
 
 const createAlerts = (icon, title, text) => {
   Swal.fire({
-    icon: icon,
-    title: title,
-    text: text,
+    icon,
+    title,
+    text,
   });
 }
 
@@ -112,12 +112,12 @@ const buildTable = (data) => {
       <th>Fecha y Hora</th>
       <th>Especialidad</th>`;
 
-  data.forEach((shift) => {
+  data.forEach(({firstName,lastName,dateTime,speciality}) => {
     tableHTML += `
       <tr>
-          <td>${shift.firstName} ${shift.lastName}</td>
-          <td>${format(new Date(shift.dateTime), 'dd-MM-yyyy H:mm')}</td>
-          <td>${getSpeciality(shift.speciality)}</td>
+          <td>${firstName} ${lastName}</td>
+          <td>${format(new Date(dateTime), 'dd-MM-yyyy H:mm')}</td>
+          <td>${getSpeciality(speciality)}</td>
       </tr>        
       `;
   });
@@ -136,7 +136,7 @@ const listResults = () => {
   }
   const DATA_SEARCH = new FormData(SEARCH);
   const FILTEREDS_SHIFTS = DATA_LOCAL_STORAGE.filter(
-    (shift) => shift.document == DATA_SEARCH.get("search").replaceAll(".", "")
+    ({document}) => document == DATA_SEARCH.get("search").replaceAll(".", "")
   );
   if (FILTEREDS_SHIFTS.length) {
     const tableHTML = buildTable(FILTEREDS_SHIFTS)
