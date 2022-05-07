@@ -1,5 +1,5 @@
+import { format, isEqual, isPast } from "https://esm.run/date-fns";
 
-import { format, isEqual, isPast } from 'https://esm.run/date-fns';
 class Shift {
   constructor(firstName, lastName, document, email, speciality, dateTime) {
     this.firstName = firstName;
@@ -18,14 +18,19 @@ const SEARCH = document.getElementById("search");
 FORMULARIO.addEventListener("submit", (event) => {
   event.preventDefault();
 
-  if (!createShift()) return
+  if (!createShift()) return;
 
   if (isValidDateShift()) {
-    addLocalStorage();
-    createAlerts("success", "Ok", "Su turno ha sido creado")
-    FORMULARIO.reset();
+    saveShift()
+      .then(() => {
+        createAlerts("success", "Ok", "Su turno ha sido creado");
+        FORMULARIO.reset();
+      })
+      .catch((error) => {
+        createAlerts("error", "Error", error);
+      });
   } else {
-    createAlerts("error", "Error", "Ya existe un turno para esta fecha y hora")
+    createAlerts("error", "Error", "Ya existe un turno para esta fecha y hora");
   }
 });
 
@@ -34,12 +39,15 @@ SEARCH.addEventListener("submit", (event) => {
   listResults();
 });
 
-
 const createShift = () => {
   const DATA = new FormData(FORMULARIO);
   if (isPast(new Date(DATA.get("dateTime")))) {
-    createAlerts("error", "Error", "La fecha no puede ser anterior a la actual");
-    return false
+    createAlerts(
+      "error",
+      "Error",
+      "La fecha no puede ser anterior a la actual"
+    );
+    return false;
   } else {
     newShift = new Shift(
       DATA.get("firstName"),
@@ -49,22 +57,23 @@ const createShift = () => {
       DATA.get("especialidad"),
       DATA.get("dateTime")
     );
-    return true
+    return true;
   }
 };
 
 const isValidDateShift = () => {
-  const DATA_LOCAL_STORAGE = JSON.parse(localStorage.getItem("shiftList"))
-  if (DATA_LOCAL_STORAGE == null) { return true }
-  const EXISTING_SHIFT = DATA_LOCAL_STORAGE.find(
-    (shift) => isEqual(new Date(newShift.dateTime), new Date(shift.dateTime))
+  const DATA_LOCAL_STORAGE = JSON.parse(localStorage.getItem("shiftList"));
+  if (DATA_LOCAL_STORAGE == null) {
+    return true;
+  }
+  const EXISTING_SHIFT = DATA_LOCAL_STORAGE.find((shift) =>
+    isEqual(new Date(newShift.dateTime), new Date(shift.dateTime))
   );
   if (EXISTING_SHIFT) {
     return false;
   }
   return true;
-}
-
+};
 
 const addLocalStorage = () => {
   if (localStorage.getItem("shiftList")) {
@@ -102,8 +111,7 @@ const createAlerts = (icon, title, text) => {
     title,
     text,
   });
-}
-
+};
 
 const buildTable = (data) => {
   let tableHTML = `
@@ -112,11 +120,11 @@ const buildTable = (data) => {
       <th>Fecha y Hora</th>
       <th>Especialidad</th>`;
 
-  data.forEach(({firstName,lastName,dateTime,speciality}) => {
+  data.forEach(({ firstName, lastName, dateTime, speciality }) => {
     tableHTML += `
       <tr>
           <td>${firstName} ${lastName}</td>
-          <td>${format(new Date(dateTime), 'dd-MM-yyyy H:mm')}</td>
+          <td>${format(new Date(dateTime), "dd-MM-yyyy H:mm")}</td>
           <td>${getSpeciality(speciality)}</td>
       </tr>        
       `;
@@ -124,30 +132,61 @@ const buildTable = (data) => {
 
   tableHTML += `</table>`;
 
-  return tableHTML
-}
+  return tableHTML;
+};
 
 const listResults = () => {
-  const DATA_LOCAL_STORAGE = JSON.parse(localStorage.getItem("shiftList"))
+  try {
+    const VALUE_SEARCH = new FormData(SEARCH).get("search").replaceAll(".", "");
+    if(VALUE_SEARCH)
+    getShiftByDocument(VALUE_SEARCH).then((data) => {
+      if (DATA_LOCAL_STORAGE == null) {
+        createAlerts("error", "Error", "No hay turnos cargados");
+        return;
+      }
+      const FILTEREDS_SHIFTS = DATA_LOCAL_STORAGE.filter(
+        ({ document }) =>
+          document == VALUE_SEARCH.get("search").replaceAll(".", "")
+      );
+      if (FILTEREDS_SHIFTS.length) {
+        const tableHTML = buildTable(FILTEREDS_SHIFTS);
 
-  if (DATA_LOCAL_STORAGE == null) {
-    createAlerts("error", "Error", "No hay turnos cargados")
-    return
-  }
-  const DATA_SEARCH = new FormData(SEARCH);
-  const FILTEREDS_SHIFTS = DATA_LOCAL_STORAGE.filter(
-    ({document}) => document == DATA_SEARCH.get("search").replaceAll(".", "")
+        let nodeTable = document.getElementById("table");
+        nodeTable.innerHTML = tableHTML;
+        return;
+      } else {
+        createAlerts("error", "Error", "No hay turnos cargados para este DNI");
+        let nodeTable = document.getElementById("table");
+        nodeTable.innerHTML = "";
+        return;
+      }
+    });
+  } catch (error) {}
+};
+
+const saveShift = () => {
+  return fetch("http://localhost:3000/shifts", {
+    method: "POST",
+    body: JSON.stringify({
+      firstName: newShift.firstName,
+      lastName: newShift.lastName,
+      email: newShift.email,
+      speciality: newShift.speciality,
+      document: newShift.document,
+      dateTime: newShift.dateTime,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then((response) => {
+    response.json();
+  });
+};
+
+const getShiftByDocument = (document) => {
+  return fetch(`http://localhost:3000/shifts/?document=${document}`).then(
+    (response) => {
+      response.json();
+    }
   );
-  if (FILTEREDS_SHIFTS.length) {
-    const tableHTML = buildTable(FILTEREDS_SHIFTS)
-
-    let nodeTable = document.getElementById("table");
-    nodeTable.innerHTML = tableHTML;
-    return
-  } else {
-    createAlerts("error", "Error", "No hay turnos cargados para este DNI")
-    let nodeTable = document.getElementById("table");
-    nodeTable.innerHTML = "";
-    return
-  }
 };
