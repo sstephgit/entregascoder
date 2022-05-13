@@ -26,8 +26,7 @@ const getSpeciality = (value) => {
         <th>Nombre</th>
         <th>Fecha y Hora</th>
         <th>Especialidad</th>`;
-  debugger
-    data.forEach(({ firstName, lastName, dateTime, speciality }) => {
+      data.forEach(({ firstName, lastName, dateTime, speciality }) => {
       tableHTML += `
         <tr>
             <td>${firstName} ${lastName}</td>

@@ -8,7 +8,7 @@
     "server": "json-server --watch db.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Stephanie Sayago",
   "license": "ISC",
   "dependencies": {
     "json-server": "^0.17.0",
