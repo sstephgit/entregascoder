@@ -1,14 +1,20 @@
 import { isPast } from "https://esm.run/date-fns";
-import { saveShift, getShiftByDocument } from "./fecth.js";
+import { saveShift, getShiftByDocument, saveUser } from "./fecth.js";
 import { createAlerts, buildTable } from "./utils.js";
 import { Shift } from "./class-shift.js";
-import { isValidDateShift } from "./validations.js";
+import { isValidDateShift, validateUser } from "./validations.js";
+import { addSesionStorage } from "./storage.js";
 
-let newShift = {};
+export let newShift = {};
 
 const FORMULARIO = document.getElementById("formulario");
 const SEARCH = document.getElementById("search");
 const TAKE_SHIFT_BUTTOM = document.getElementById("take-shift");
+const LOG_IN = document.getElementById("log-in-button");
+const LOG_UP = document.getElementById("log-up-button");
+const OPEN_LOG_UP = document.getElementById("open_log_up");
+const LOG_IN_DATA = document.getElementById("login-data");
+const LOG_UP_DATA = document.getElementById("logup-data");
 
 const createShift = () => {
   const DATA = new FormData(FORMULARIO);
@@ -45,7 +51,7 @@ const listResults = async () => {
             createAlerts("error", "Error", "No hay turnos cargados");
             return;
           }
-     
+
           if (data.length) {
             const tableHTML = buildTable(data);
             let nodeTable = document.getElementById("table");
@@ -65,12 +71,14 @@ const listResults = async () => {
   } catch (error) {}
 };
 
-const proccessShift = (event) => {
+const proccessShift = async (event) => {
   event.preventDefault();
 
   if (!createShift()) return;
 
-  if (isValidDateShift()) {
+  let isValid = await isValidDateShift();
+
+  if (isValid) {
     saveShift(newShift)
       .then(() => {
         createAlerts("success", "Ok", "Su turno ha sido creado");
@@ -90,6 +98,57 @@ const toggleButton = (event) => {
   document.getElementById("shift").style.display = "block";
 };
 
+const processLogIn = async () => {
+  const DATA = new FormData(LOG_IN_DATA);
+  const EMAIL = DATA.get("email");
+  const PASSWORD = DATA.get("password");
+
+  let { isValit, userData } = await validateUser(EMAIL, PASSWORD);
+
+  if (isValit) {
+    createAlerts("success", `Hola ${userData.firstName}`, "Bienvenido");
+    document.getElementById(
+      "user-data"
+    ).innerHTML = `<h1> Hola ${userData.firstName}</h1>`;
+    document.getElementById("login").style.display = "none";
+    document.getElementById("home").style.display = "block";
+  } else {
+    createAlerts("error", "Error", "Usuario o contraseña incorrectos");
+  }
+
+  addSesionStorage(userData);
+};
+
+const processLogUp = async () => {
+  const DATA = new FormData(LOG_UP_DATA);
+  const firstName = DATA.get("first_name");
+  const lastName = DATA.get("last_name");
+  const email = DATA.get("email_address");
+  const document_number = DATA.get("document_number");
+  const password = DATA.get("pass");
+
+  try {
+    await saveUser({ firstName, lastName, email, document_number, password });
+    createAlerts("success", "Ok", "Usuario creado");
+    LOG_UP_DATA.reset();
+    document.getElementById("logup").style.display = "none";
+    document.getElementById("login").style.display = "block";
+  } catch (error) {
+    createAlerts("error", "Error", error);
+  }
+};
+
+const userDataLogin = () => {
+  let userData = JSON.parse(sessionStorage.getItem("user"));
+  if (userData) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("home").style.display = "block";
+    document.getElementById(
+      "user-data"
+    ).innerHTML = `<h1> Hola ${userData.firstName}</h1>`;
+  }
+};
+
 TAKE_SHIFT_BUTTOM.addEventListener("click", toggleButton);
 
 FORMULARIO.addEventListener("submit", proccessShift);
@@ -98,3 +157,23 @@ SEARCH.addEventListener("submit", (event) => {
   event.preventDefault();
   listResults();
 });
+
+/* controles */
+
+LOG_IN.addEventListener("click", (event) => {
+  event.preventDefault();
+  processLogIn();
+});
+
+LOG_UP.addEventListener("click", (event) => {
+  event.preventDefault();
+  processLogUp();
+});
+
+OPEN_LOG_UP.addEventListener("click", (event) => {
+  event.preventDefault();
+  document.getElementById("logup").style.display = "block";
+  document.getElementById("login").style.display = "none";
+});
+
+userDataLogin();

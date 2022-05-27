@@ -2,6 +2,11 @@
     background-image: url("/image/fondohojasverdes.webp");
 }
 
+.btn-primary{
+    background-color: #125c3a;
+    border-color: #125c3a;
+}
+
 .letters {
  color: #125c3a;
 }
