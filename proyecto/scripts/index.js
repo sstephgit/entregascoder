@@ -32,7 +32,7 @@ const createShift = () => {
       DATA.get("document"),
       DATA.get("email"),
       DATA.get("especialidad"),
-      DATA.get("dateTime")
+      new Date(DATA.get("dateTime")).getTime().toString()
     );
     return true;
   }
